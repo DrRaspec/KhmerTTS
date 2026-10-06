@@ -1,0 +1,80 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# AI / ML Models
+# =========================
+models/
+checkpoints/
+weights/
+
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# HuggingFace / ML cache
+.cache/
+huggingface/
+.huggingface/
+
+# =========================
+# Generated TTS files
+# =========================
+outputs/
+output/
+generated/
+temp/
+tmp/
+
+# User uploads / temporary voices
+uploads/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# macOS
+# =========================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Misc
+# =========================
+*.tmp
+*.temp
