@@ -1,0 +1,6 @@
+# Small dataset preparation tool; keep these separate from inference installs.
+numpy
+soundfile
+scipy
+requests
+PyYAML

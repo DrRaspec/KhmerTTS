@@ -1,1 +1,16 @@
-{}
+{
+    "Dara": {
+        "reference": "voices/dara_default.wav",
+        "description": "Default Khmer speaker, saved from a generated male voice sample",
+        "permanent": true,
+        "language": "Khmer",
+        "source": "generated sample"
+    },
+    "Rithy": {
+        "reference": "voices/rithy_default.wav",
+        "description": "Alternative Khmer speaker, saved from a generated male voice sample",
+        "permanent": true,
+        "language": "Khmer",
+        "source": "generated sample"
+    }
+}

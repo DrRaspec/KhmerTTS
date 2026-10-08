@@ -1,0 +1,6 @@
+voxcpm
+gradio>=6,<7
+numpy
+soundfile
+transformers>=4.33
+uroman

@@ -78,3 +78,7 @@ logs/
 # =========================
 *.tmp
 *.temp
+.generation_timings.json
+
+# Downloaded speech corpora and generated training manifests
+data/

@@ -1,5 +1,9 @@
 # Khmer VoxCPM2 Studio — Setup, Voice Configuration & Run Guide
 
+For dataset samples and the separate model fine-tuning workflow, see
+[TRAINING.md](TRAINING.md). Preparing recordings or saving a reference voice
+does not train or replace the speech model.
+
 This guide explains how to set up, run, and configure the **Khmer VoxCPM2 Studio** app.
 
 The app lets you:
@@ -13,18 +17,160 @@ The app lets you:
 - Download the result as a WAV file
 - Add more voices later without changing the UI
 
-## Current Apple Silicon performance settings
+## Studio interface and live progress
 
-The app now explicitly requires the Apple GPU (`mps`) on Apple Silicon,
-so it cannot silently fall back to CPU. Startup and generation logs show
-the actual device and dtype. Restart after updating `app.py`:
+### Keep a named speaker across generations
+
+Design presets such as **Khmer Male - Young** describe a voice type, so the
+speaker can change each time. To reuse a particular speaker:
+
+1. Generate a short sample and listen to it.
+2. Below the audio preview, open **Keep this speaker**.
+3. Enter a name such as **Dara** or **Sophea**, then click **Save this speaker**.
+4. Keep that named voice selected when generating new scripts.
+
+The app saves up to the first 20 seconds as a permanent reference, selects
+the named speaker when its language matches the active VoxCPM2 model, and
+clears any temporary reference override. Saved speakers appear before design
+presets and remain available after restarting. Each section of a long script
+uses the same recording. This improves speaker consistency; it does not
+guarantee identical delivery. You can also upload or record a specific person's
+voice in **Voices**, give it a human name, and save it there.
+
+The studio has three tabs:
+
+- **Create** — choose a voice and style, write your script, and generate audio.
+  The preview, status, and WAV download sit beside the script. Open **Voice
+  options** for extra direction or a temporary reference recording.
+- **Voices** — upload or record a reference and save a reusable voice.
+- **Settings** — choose and apply a model, adjust detail steps, or open
+  advanced voice guidance. Use **Fast · 4 steps** for a quick sample.
+
+During generation the status shows preparation, audio creation with a live
+elapsed timer, saving, and completion. Long runs display a performance hint;
+generation errors leave a readable message and restore the action buttons.
+The model does not provide a reliable total, so elapsed time is shown rather
+than a misleading completion percentage. Terminal details remain available.
+Restart the app after updating to load the new interface.
+
+Time estimates learn from successful runs on the same hardware/model and
+voice settings. After a sample completes, an approximate range appears
+before generation and counts down during audio creation. Loading and
+downloads are separate. Cancelled/failed runs do not train the estimate.
+Very different script lengths show "Learning your speed" instead of an
+unsupported extrapolation; a run exceeding its range shows "Taking longer
+than estimated." Timing history stores only hashed configuration keys,
+character counts, and durations in `.generation_timings.json`, not scripts
+or audio. Estimates can change with speaking pace, memory pressure, and
+other running apps.
+
+The estimate sits directly above **Generate**. During a run, the progress
+card shows the stage, **Elapsed**, and **Remaining** in a compact status line.
+"Learning speed" means no comparable successful run is available yet.
+Explanations are under **About timing & models** in Settings.
+
+## Cancel generation and switch to a lightweight model
+
+**Stop** requests a cooperative stop. The UI shows **Stopping**
+until the current model computation finishes and the next checkpoint can
+stop it. Cancelled requests discard their audio; new generation and model
+switching wait until the worker has stopped. A session can only cancel its
+own request. During a first-time download/model load, cancellation waits for
+loading to return; it cannot interrupt an in-flight download or GPU operation.
+
+Choose a model in **Settings → Speech model**, then press **Apply model**:
+
+| Model | Features | Memory / use |
+|---|---|---|
+| VoxCPM2 | Voice design, speaking styles, reference cloning | Large 2B model; heavy on 16 GB Macs |
+| MMS Khmer | One built-in Khmer speaker | Small 36.3M model, runs on CPU; noncommercial only |
+| VoxCPM2 English | Four English voice presets, styles, reference cloning | Same cached weights; fresh instance when switching language |
+| MMS English | One built-in English speaker | Small 36.3M model, runs on CPU; noncommercial only |
+
+For English, open **Settings**, select **VoxCPM2 English** or **MMS English**,
+and click **Apply model**. The Create tab updates the voice choices and script
+placeholder. The starter sample changes to English; scripts you have edited
+are preserved. VoxCPM2 English includes warm/deep male and bright/calm female
+voice design presets. These are descriptive presets, not separate trained
+speaker checkpoints. Use a reference recording for a consistent speaker.
+
+When saving a reusable voice in **Voices**, choose its **Language**. Existing
+saved voices default to Khmer. A saved English voice appears when using an
+English model. MMS has a single built-in voice, so preset and reference controls
+remain disabled for both MMS models.
+
+MMS English downloads [`facebook/mms-tts-eng`](https://huggingface.co/facebook/mms-tts-eng)
+on its first generation and caches it locally. It uses the existing Transformers
+dependency and carries the same CC-BY-NC 4.0 noncommercial license as MMS Khmer.
+VoxCPM2's [model card](https://huggingface.co/openbmb/VoxCPM2) documents English
+speech generation and voice design; its English mode needs no separate download.
+
+### Khmer pronunciation troubleshooting
+
+The Khmer comedy/cartoon presets and their gentler Playful replacements were
+removed after reports of unintelligible output. **Playful**, **Comedy**, and
+**Cartoon** styles are hidden in Khmer mode.
+
+The plain-text workaround was also removed. The default is restored to
+**Khmer Male - Young** with **Natural** style. The original Khmer voice
+descriptions, style descriptions, parenthesized prompt format, and generation
+options are restored. Stale requests using removed experimental presets are
+rejected, rather than silently changing the generation prompt. Switching
+between Khmer and English unloads the previous model so inference state is
+not shared between modes; downloaded weights remain cached.
+
+Start with a short Khmer sentence at 10 inference steps and guidance 2.0.
+Long VoxCPM2 scripts are now split automatically into sections of up to 180
+script characters, using paragraphs, sentence punctuation, and spaces where
+possible. Splitting preserves Khmer combining marks and coeng sequences.
+Each section gets the same voice/style instructions and reference recording;
+the audio is joined with 0.25-second pauses into one downloadable WAV. Short
+scripts use the original single request. Status shows the current section,
+and cancellation discards the entire result. The 180-character target is a
+conservative app setting, not a documented model limit. Voice identity may
+vary across sections without a reference clip; long scripts may take longer
+because each section starts a new synthesis request.
+If VoxCPM2 still sounds wrong, compare it with **MMS Khmer** under Settings.
+MMS uses a dedicated Khmer checkpoint, with a single voice and no expressive
+styles or cloning. For VoxCPM2 speaker identity, a clean Khmer reference clip
+can be supplied through Voice options; verify the pronunciation by listening.
+
+MMS Khmer uses [`facebook/mms-tts-khm`](https://huggingface.co/facebook/mms-tts-khm),
+licensed CC-BY-NC 4.0. It does not support the speaker presets, cloning,
+style instructions, CFG, or diffusion steps; those controls are disabled
+when you switch to it. Listen to a sample before choosing it for a project.
+The reduced model size lowers memory demand but does not guarantee a
+particular generation time or the same expressive quality as VoxCPM2.
+
+The app starts without loading either speech model. The first generation
+loads/downloads the selected model. Switching to a different model releases
+the previous model and its unused GPU cache first; the two models are never
+kept loaded together. MMS model files are cached under `.cache/huggingface/hub/`.
+Keep `speech_models.py` and `runtime_config.py` beside `app.py`.
+
+Install dependencies, including Khmer text romanization for MMS:
+
+```bash
+python -m pip install -r requirements.txt
+python app.py
+```
+
+## Hardware detection and current performance settings
+
+The app detects available PyTorch accelerators on the computer running
+Python: CUDA first, then Apple GPU (`mps`), then CPU. Startup logs show
+the operating system, architecture, CPU thread count, selected accelerator,
+and NVIDIA GPU memory when available. The UI shows the selected accelerator;
+generation logs show the actual device and dtype. If the app runs on a
+server, detection describes that server, not a visitor's browser computer.
+Keep `runtime_config.py` alongside `app.py`. Restart after updating:
 
 ```bash
 source .venv/bin/activate
 python app.py
 ```
 
-Inference Steps now defaults to **10**. Automatic full-script retries and
+Inference Steps defaults to **10 on GPUs** and **6 on CPU**. Automatic full-script retries and
 the Chinese/English text normalizer are disabled for Khmer generation.
 Write numbers as the Khmer words you want spoken. The finished result
 reports generation time, audio duration, and real-time factor (generation
@@ -45,6 +191,30 @@ VOXCPM_DEVICE=cpu python app.py
 CPU generation may be much slower. The older setup examples below describe
 the previous `auto`, 20-step configuration; this section reflects the current
 app defaults.
+
+`VOXCPM_DEVICE=auto` is the default. You can explicitly select `cpu`, `mps`,
+`cuda`, or an indexed GPU such as `cuda:1`. Invalid or unavailable explicit
+choices fail clearly rather than silently changing devices. Detection uses
+the backends supported by the installed PyTorch/VoxCPM environment; it does
+not install GPU drivers or enable unsupported GPUs. The slider shows coarse
+hardware recommendations: CPU 4–10 steps, MPS 8–15, baseline CUDA 10–20. Users can still
+select 4–30 steps; generation shows a notice above the suggested range.
+These are conservative starting guidelines, not per-model benchmarks or
+guarantees against slowdowns. Steps primarily affect compute time; they do
+not solve insufficient memory. Hardware detection does not predict current
+memory pressure or the load from other apps. Compare a short sample before
+increasing steps for a full script.
+
+CUDA recommendations also consider GPU memory, multiprocessor count, and
+compute capability. Lower-capacity cards start at 8 steps. Modern cards
+(compute capability major 8 or newer) with at least 16 GiB and 80
+multiprocessors start at 15; those with at least 24 GiB and 120
+multiprocessors start at 20. Their suggested upper values are 25 and 30.
+Missing specifications use the 10-step baseline. These tiers are estimates:
+VRAM alone does not measure speed, and processor counts are not directly
+comparable across architectures. A low-memory GPU can still run out of
+memory at low steps. Apple GPUs retain the 10-step starting point because
+this PyTorch interface does not provide comparable GPU capability metrics.
 
 ---
 
