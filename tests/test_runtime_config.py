@@ -2,16 +2,16 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from runtime_config import detect_hardware, recommend_steps
+from studio.runtime_config import detect_hardware, recommend_steps
 
 
 class HardwareDetectionTests(unittest.TestCase):
     def detect(self, cuda=False, mps=False, requested="auto", count=1):
-        with patch("runtime_config.torch.cuda.is_available", return_value=cuda), \
-             patch("runtime_config.torch.backends.mps.is_available", return_value=mps), \
-             patch("runtime_config.torch.cuda.device_count", return_value=count), \
-             patch("runtime_config.torch.cuda.current_device", return_value=0), \
-             patch("runtime_config.torch.cuda.get_device_properties", return_value=SimpleNamespace(
+        with patch("studio.runtime_config.torch.cuda.is_available", return_value=cuda), \
+             patch("studio.runtime_config.torch.backends.mps.is_available", return_value=mps), \
+             patch("studio.runtime_config.torch.cuda.device_count", return_value=count), \
+             patch("studio.runtime_config.torch.cuda.current_device", return_value=0), \
+             patch("studio.runtime_config.torch.cuda.get_device_properties", return_value=SimpleNamespace(
                  name="Test GPU", total_memory=12 * 1024**3)):
             return detect_hardware(requested)
 

@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from generation_estimates import GenerationEstimates, estimate_message
+from studio.generation_estimates import GenerationEstimates, estimate_message
 
 
 class EstimateTests(unittest.TestCase):

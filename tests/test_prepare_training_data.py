@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import numpy as np
 import soundfile as sf
 
-from prepare_training_data import prepare_source, split_records
+from training.prepare_data import prepare_source, split_records
 
 
 class DataPreparationTests(unittest.TestCase):

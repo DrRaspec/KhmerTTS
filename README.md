@@ -146,7 +146,7 @@ The app starts without loading either speech model. The first generation
 loads/downloads the selected model. Switching to a different model releases
 the previous model and its unused GPU cache first; the two models are never
 kept loaded together. MMS model files are cached under `.cache/huggingface/hub/`.
-Keep `speech_models.py` and `runtime_config.py` beside `app.py`.
+Keep the `studio/` package beside `app.py`.
 
 Install dependencies, including Khmer text romanization for MMS:
 
@@ -163,7 +163,7 @@ the operating system, architecture, CPU thread count, selected accelerator,
 and NVIDIA GPU memory when available. The UI shows the selected accelerator;
 generation logs show the actual device and dtype. If the app runs on a
 server, detection describes that server, not a visitor's browser computer.
-Keep `runtime_config.py` alongside `app.py`. Restart after updating:
+Hardware detection lives in `studio/runtime_config.py`. Restart after updating:
 
 ```bash
 source .venv/bin/activate
@@ -224,15 +224,28 @@ Create a project folder like this:
 
 ```text
 khmer-voxcpm/
-├── app.py
+├── app.py                 # Launch entry point
+├── studio/                # UI, voices, generation, and runtime modules
+├── training/              # Dataset preparation tools
+├── tests/                 # Automated tests
 ├── voices/
 ├── outputs/
+├── data/                  # Downloaded datasets and training manifests
 └── .venv/
 ```
 
 ### What each folder is for
 
-- `app.py` — your main Gradio + VoxCPM2 application
+- `app.py` — starts the Gradio application
+- `studio/ui.py` — builds the interface and wires events
+- `studio/voices.py` — voice presets, styles, and saved speaker references
+- `studio/generation.py` — speech generation, cancellation, and timing
+- `studio/speech_models.py` — model loading and inference adapters
+- `studio/config.py` — shared runtime settings and data paths
+- `studio/runtime_config.py` — hardware detection and step recommendations
+- `studio/generation_estimates.py` — timing history and estimates
+- `training/prepare_data.py` — prepares Khmer dataset samples
+- `tests/` — run with `python -m unittest discover -s tests`
 - `voices/` — permanent reference voice WAV files
 - `outputs/` — generated WAV files
 - `.venv/` — Python virtual environment
@@ -391,10 +404,10 @@ This makes it easy to reuse the same speaker with many different styles.
 
 # 8. Configure Voices
 
-Find this section inside `app.py`:
+Find this section inside `studio/voices.py`:
 
 ```python
-VOICES = {
+DEFAULT_VOICES = {
     ...
 }
 ```
@@ -690,7 +703,7 @@ Use voices that you own or have permission to clone.
 
 # 14. Configure Speaking Styles
 
-Find:
+Find this section in `studio/voices.py`:
 
 ```python
 STYLES = {
@@ -1190,7 +1203,7 @@ Then add:
 },
 ```
 
-Save `app.py`.
+Save `studio/voices.py`.
 
 Stop the app:
 

@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import torch
 
-from speech_models import (
+from studio.speech_models import (
     FULL_MODEL, LITE_MODEL, ENGLISH_MODEL, ENGLISH_LITE_MODEL, LiteSpeechModel,
     GenerationCancelled, GenerationTask, SpeechModelManager,
     cancellation_hooks, generation_executor, split_lite_text, split_vox_text,

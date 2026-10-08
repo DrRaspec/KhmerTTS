@@ -1,6 +1,6 @@
 # Khmer voice training starter
 
-The app runs VoxCPM2. `prepare_training_data.py` downloads a bounded pilot,
+The app runs VoxCPM2. `training/prepare_data.py` downloads a bounded pilot,
 not a full corpus, and does not start training or change the studio's voices.
 The earlier Dara and Rithy references are generated samples, not dataset speakers.
 
@@ -10,7 +10,7 @@ Run from this project directory:
 
 ```bash
 .venv/bin/python -m pip install -r requirements-data.txt
-.venv/bin/python -u prepare_training_data.py --count 24
+.venv/bin/python -m training.prepare_data --count 24
 ```
 
 The downloader accepts 2–20 second Khmer clips, checks for empty/nonfinite audio,

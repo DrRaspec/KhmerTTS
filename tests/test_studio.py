@@ -1,7 +1,7 @@
 """Smoke-test the UI and progress flow without loading the speech model."""
 
 import os
-import runpy
+import importlib
 import tempfile
 import time
 import unittest
@@ -33,7 +33,17 @@ class StudioTests(unittest.TestCase):
         self.patch = patch.dict("sys.modules", {"voxcpm": fake_voxcpm})
         self.patch.start()
         self.addCleanup(self.patch.stop)
-        self.studio = runpy.run_path(str(Path(__file__).with_name("app.py")), run_name="studio_test")
+        # Refresh shared runtime state inside the temporary workspace for each test.
+        modules = {
+            name: importlib.reload(importlib.import_module(f"studio.{name}"))
+            for name in ("config", "voices", "generation", "ui")
+        }
+        voices, generation, ui = (modules[name] for name in ("voices", "generation", "ui"))
+        speech_models = importlib.import_module("studio.speech_models")
+        self.studio = {
+            **vars(speech_models), **vars(voices), **vars(generation),
+            "app": ui.build_app(),
+        }
         self.studio["MODEL_MANAGER"].factory = lambda key: SimpleNamespace(
             device="cpu", sample_rate=16000,
             generate=lambda text, options, task: self.model.generate(text=text, **options),
